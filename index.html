@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="no">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Heksejakt 2026</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Importmap forteller nettleseren hvordan den skal tolke biblioteker -->
+    <script type="importmap">
+      {
+        "imports": {
+          "react": "https://esm.sh/react@18.2.0",
+          "react-dom": "https://esm.sh/react-dom@18.2.0",
+          "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+          "lucide-react": "https://esm.sh/lucide-react@0.344.0"
+        }
+      }
+    </script>
+  </head>
+  <body class="bg-zinc-950 text-zinc-200">
+    <div id="root"></div>
+    
+    <script type="module">
+      import React from 'react';
+      import ReactDOM from 'react-dom/client';
+      
+      /** * VIKTIG: Vi bruker '/src/App.jsx' (absolutt sti fra rot). 
+       * Dette er standarden Vite bruker for å finne filer i utviklingsmodus 
+       * og under bygging for Vercel.
+       */
+      import App from '/src/App.jsx';
+
+      const rootElement = document.getElementById('root');
+      if (rootElement) {
+        const root = ReactDOM.createRoot(rootElement);
+        root.render(
+          React.createElement(React.StrictMode, null, 
+            React.createElement(App)
+          )
+        );
+      }
+    </script>
+  </body>
+</html>
