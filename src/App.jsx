@@ -28,29 +28,24 @@ const apiKey = getEnvApiKey();
 const callGeminiAPI = async (prompt, systemInstruction = null) => {
   if (!apiKey || apiKey.trim() === "") return "FEIL: API-nøkkel mangler i Vercel-innstillingene.";
   
-  // Liste over modeller, vi starter med de mest stabile og generelle for gratis-nøkler
+  // Standard, stabile modeller for gratis-tier
   const modelsToTry = [
     'gemini-1.5-flash', 
     'gemini-1.5-flash-8b',
-    'gemini-2.0-flash',
-    'gemini-pro'
+    'gemini-2.0-flash'
   ];
   
   let errorMessages = [];
 
   for (const model of modelsToTry) {
     try {
-      // Vi baker inn personligheten rett i meldingen for å unngå kompatibilitetsfeil (404/400)
       const fullText = systemInstruction 
         ? `[BAKGRUNNSINFO: ${systemInstruction}]\n\nSPØRSMÅL FRA BRUKER: ${prompt}`
         : prompt;
 
+      // FJERNET safetySettings med BLOCK_NONE, da dette ofte blokkeres eller gir 404 på gratis-nøkler.
       const payload = {
-        contents: [{ parts: [{ text: fullText }] }],
-        safetySettings: [
-          { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
-          { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" }
-        ]
+        contents: [{ parts: [{ text: fullText }] }]
       };
 
       const response = await fetch(
@@ -69,12 +64,15 @@ const callGeminiAPI = async (prompt, systemInstruction = null) => {
         const errData = await response.json().catch(() => ({}));
         const googleError = errData?.error?.message || response.statusText;
         
-        // Hvis det er en klar feil med nøkkelen, si ifra med en gang
+        // Sjekker spesifikt for "Limit: 0" problemet du opplevde
+        if (googleError.includes("limit: 0")) {
+          return "FEIL: Google gir deg 0 i kvote. Dette betyr at kontoen din ikke har tilgang til gratis-tier. Tips: Prøv å lage en ny API-nøkkel med en privat @gmail.com-konto i stedet for en jobb/skole-konto!";
+        }
+
         if (response.status === 400 && googleError.includes("API key not valid")) {
           return "FEIL 400: API-nøkkelen din er ugyldig. Sjekk at du kopierte hele nøkkelen uten mellomrom.";
         }
 
-        // Spar på feilmeldingen og prøv neste modell
         errorMessages.push(`[${model}: ${response.status} ${googleError}]`);
         continue;
       }
@@ -83,8 +81,7 @@ const callGeminiAPI = async (prompt, systemInstruction = null) => {
     }
   }
 
-  // Hvis alle modellene feiler, skriver vi ut nøyaktig hva Google klaget på
-  return `Orakelet feilet på alle forsøk. Send dette til utvikleren for feilsøking:\n\nDetaljer:\n${errorMessages.join("\n")}`;
+  return `Orakelet feilet på alle forsøk.\n\nDetaljer:\n${errorMessages.join("\n")}`;
 };
 
 // --- KOMPLETT DATA FRA AGENDA-PDF ---
