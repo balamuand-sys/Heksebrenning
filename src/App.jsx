@@ -2,10 +2,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import { 
   Calendar, Map, HelpCircle, Info, MapPin, Clock, Wallet, 
   ChevronDown, ChevronUp, Flame, Beer, Train, Music, 
-  CheckCircle2, Headphones, PlayCircle, Sparkles, Send, 
-  Bot, RefreshCw, Thermometer, Sun, Cloud, CloudRain, 
+  CheckCircle2, Headphones, PlayCircle, Send, 
+  RefreshCw, Thermometer, Sun, Cloud, CloudRain, 
   Snowflake, CloudLightning, Coins, AlertTriangle, ShieldCheck,
-  History, Landmark, ScrollText, Plane, Utensils, Search,
+  Landmark, ScrollText, Plane, Utensils, Search,
   Share, X, Download
 } from 'lucide-react';
 
@@ -59,7 +59,7 @@ const callGeminiAPI = async (prompt, systemInstruction = null) => {
 
       if (response.ok) {
         const data = await response.json();
-        return data.candidates?.[0]?.content?.parts?.[0]?.text || "Heksa mumler noe uforståelig...";
+        return data.candidates?.[0]?.content?.parts?.[0]?.text || "Rakel mumler noe uforståelig...";
       } else {
         const errData = await response.json().catch(() => ({}));
         const googleError = errData?.error?.message || response.statusText;
@@ -176,6 +176,15 @@ const getWeatherDetails = (code) => {
 
 // --- KOMPONENTER ---
 
+// Custom Heksehatt-ikon
+const WitchHatIcon = ({ size = 24, className = "" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M2.5 17a19.5 19.5 0 0 0 19 0" />
+    <path d="M6 16.5l2 -10.5c.5 -2.5 2 -4 4 -4c0 2 2 3 2 5l1.5 9.5" />
+    <line x1="8" y1="14" x2="16" y2="14" />
+  </svg>
+);
+
 // Pop-up for å legge til på hjemskjerm (PWA)
 const InstallPrompt = () => {
   const [show, setShow] = useState(false);
@@ -258,7 +267,7 @@ export default function App() {
   const [introExpanded, setIntroExpanded] = useState(false);
   const [chatInput, setChatInput] = useState("");
   const [chatHistory, setChatHistory] = useState([
-    { role: 'model', text: 'Kakk-kakk! Brocken-heksa er klar. Spør meg om Walpurgis, Hamburg eller øl!' }
+    { role: 'model', text: 'Kakk-kakk! Rakel er klar. Spør meg om Walpurgis, Hamburg eller øl!' }
   ]);
   const [isChatting, setIsChatting] = useState(false);
   const [weather, setWeather] = useState({ hamburg: null, goslar: null, loading: true });
@@ -312,7 +321,7 @@ export default function App() {
         Trivia og Spørsmål: ${JSON.stringify(qaData)}
       `;
 
-      const sys = `Du er en sarkastisk tysk heks fra Brocken-fjellet. Svar på norsk, men sleng inn et tysk ord her og der. Vær kort, litt bitende og underholdende. 
+      const sys = `Du er en sarkastisk tysk heks fra Brocken-fjellet som heter Rakel. Svar på norsk, men sleng inn et tysk ord her og der. Vær kort, litt bitende og underholdende. 
       Du er et orakel som vet ABSOLUTT ALT om denne turen. Her er all informasjonen du har om turen: ${heksKunnskap}. Bruk denne informasjonen til å gi nøyaktige svar på brukernes spørsmål om agendaen, trivia eller sightseeing.`;
       
       const res = await callGeminiAPI(msg, sys);
@@ -392,7 +401,8 @@ export default function App() {
           )}
 
           {activeTab === 'orakel' && (
-            <div className="animate-in fade-in flex flex-col h-[70vh]">
+            // Justert høyden her til calc(100dvh - 190px) for å sitte nede ved bunnmenyen!
+            <div className="animate-in fade-in flex flex-col h-[calc(100dvh-190px)]">
               <div className="flex-1 overflow-y-auto space-y-4 p-2 custom-scrollbar">
                 {chatHistory.map((m, i) => (
                   <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
@@ -401,13 +411,16 @@ export default function App() {
                     </div>
                   </div>
                 ))}
-                {isChatting && <div className="text-orange-500 text-xs animate-pulse italic">Heksa brygger på et svar...</div>}
+                {isChatting && <div className="text-orange-500 text-xs animate-pulse italic">Rakel brygger på et svar...</div>}
                 <div ref={chatEndRef} />
               </div>
               <form onSubmit={handleChatSubmit} className="mt-4 flex gap-2">
                 <input 
-                  type="text" value={chatInput} onChange={e => setChatInput(e.target.value)}
-                  placeholder="Spør heksa..." 
+                  type="text" 
+                  value={chatInput} 
+                  onChange={e => setChatInput(e.target.value)}
+                  placeholder="Spør Rakel..." 
+                  enterKeyHint="send" /* Dette gir Send-knapp på mobiltastaturet! */
                   className="flex-1 bg-zinc-900 border border-zinc-800 rounded-full px-5 py-3 text-sm focus:border-orange-500 outline-none"
                 />
                 <button type="submit" disabled={isChatting} className="bg-orange-600 p-3 rounded-full shadow-lg active:scale-95 transition-transform"><Send size={20} /></button>
@@ -514,7 +527,7 @@ export default function App() {
             {[
               { id: 'program', icon: <Calendar size={22} />, label: 'Program' },
               { id: 'rute', icon: <Map size={22} />, label: 'Rute' },
-              { id: 'orakel', icon: <Sparkles size={22} />, label: 'Orakel' },
+              { id: 'orakel', icon: <WitchHatIcon size={22} />, label: 'Rakel' },
               { id: 'qa', icon: <HelpCircle size={22} />, label: 'Q&A' },
               { id: 'info', icon: <Info size={22} />, label: 'Info' }
             ].map(t => (
