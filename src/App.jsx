@@ -28,33 +28,30 @@ const apiKey = getEnvApiKey();
 const callGeminiAPI = async (prompt, systemInstruction = null) => {
   if (!apiKey || apiKey.trim() === "") return "FEIL: API-nøkkel mangler i Vercel-innstillingene.";
   
-  // Liste over modeller heksa skal prøve, i prioritert rekkefølge
+  // Liste over modeller, vi starter med de mest stabile og generelle for gratis-nøkler
   const modelsToTry = [
     'gemini-1.5-flash', 
-    'gemini-1.5-flash-latest', 
-    'gemini-1.5-pro',
+    'gemini-1.5-flash-8b',
+    'gemini-2.0-flash',
     'gemini-pro'
   ];
   
-  let lastErrorStatus = "";
+  let errorMessages = [];
 
   for (const model of modelsToTry) {
     try {
+      // Vi baker inn personligheten rett i meldingen for å unngå kompatibilitetsfeil (404/400)
+      const fullText = systemInstruction 
+        ? `[BAKGRUNNSINFO: ${systemInstruction}]\n\nSPØRSMÅL FRA BRUKER: ${prompt}`
+        : prompt;
+
       const payload = {
-        contents: [{ parts: [{ text: prompt }] }],
+        contents: [{ parts: [{ text: fullText }] }],
         safetySettings: [
           { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
           { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" }
         ]
       };
-
-      // Eldre modeller (som gemini-pro) støtter ikke systemInstruction direkte på samme måte,
-      // så vi baker inn instruksjonen i selve teksten for sikkerhets skyld hvis det er den modellen.
-      if (systemInstruction && model.includes("1.5")) {
-        payload.systemInstruction = { parts: [{ text: systemInstruction }] };
-      } else if (systemInstruction && !model.includes("1.5")) {
-        payload.contents[0].parts[0].text = `Instruks til deg: ${systemInstruction}\n\nSpørsmål fra bruker: ${prompt}`;
-      }
 
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey.trim()}`,
@@ -69,26 +66,25 @@ const callGeminiAPI = async (prompt, systemInstruction = null) => {
         const data = await response.json();
         return data.candidates?.[0]?.content?.parts?.[0]?.text || "Heksa mumler noe uforståelig...";
       } else {
-        // Hvis modellen ikke finnes (404), la løkken fortsette til neste modell
-        if (response.status === 404) {
-          lastErrorStatus = "404 (Ikke funnet)";
-          continue; 
+        const errData = await response.json().catch(() => ({}));
+        const googleError = errData?.error?.message || response.statusText;
+        
+        // Hvis det er en klar feil med nøkkelen, si ifra med en gang
+        if (response.status === 400 && googleError.includes("API key not valid")) {
+          return "FEIL 400: API-nøkkelen din er ugyldig. Sjekk at du kopierte hele nøkkelen uten mellomrom.";
         }
-        
-        // Andre feil (f.eks ugyldig nøkkel) bør avbryte og si ifra med en gang
-        if (response.status === 400) return "FEIL 400: Ugyldig forespørsel. Sjekk at API-nøkkelen er kopiert riktig inn i Vercel.";
-        if (response.status === 403) return "FEIL 403: API-nøkkelen er ugyldig eller mangler tilgang. Har du husket å Redeploye på Vercel?";
-        if (response.status === 429) return "FEIL 429: For mange spørsmål på kort tid. Heksa må puste ut litt.";
-        
-        lastErrorStatus = response.status.toString();
+
+        // Spar på feilmeldingen og prøv neste modell
+        errorMessages.push(`[${model}: ${response.status} ${googleError}]`);
         continue;
       }
     } catch (error) {
-      lastErrorStatus = error.message;
+      errorMessages.push(`[${model}: Nettverksfeil - ${error.message}]`);
     }
   }
 
-  return `Orakelet forsøkte alle trylleformler, men feilet. Siste feilmelding: ${lastErrorStatus}. (Tips: Prøv å lage en helt ny API-nøkkel i Google AI Studio hvis problemet vedvarer).`;
+  // Hvis alle modellene feiler, skriver vi ut nøyaktig hva Google klaget på
+  return `Orakelet feilet på alle forsøk. Send dette til utvikleren for feilsøking:\n\nDetaljer:\n${errorMessages.join("\n")}`;
 };
 
 // --- KOMPLETT DATA FRA AGENDA-PDF ---
@@ -404,7 +400,7 @@ export default function App() {
                 {chatHistory.map((m, i) => (
                   <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                     <div className={`max-w-[85%] p-4 rounded-2xl ${m.role === 'user' ? 'bg-orange-600 rounded-br-none shadow-lg' : 'bg-zinc-800 rounded-bl-none border border-zinc-700'}`}>
-                      <p className="text-sm">{m.text}</p>
+                      <p className="text-sm whitespace-pre-wrap">{m.text}</p>
                     </div>
                   </div>
                 ))}
