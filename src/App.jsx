@@ -425,7 +425,12 @@ export default function App() {
 
       {showSplash && (
         <div className="fixed inset-0 z-[100] bg-zinc-950 flex flex-col items-center justify-center animate-out fade-out duration-1000 fill-mode-forwards">
-          <Flame size={80} className="text-orange-500 animate-bounce" />
+          {/* GLØDENDE FLAMME I INTROEN */}
+          <Flame 
+            size={80} 
+            className="text-orange-500 animate-bounce" 
+            style={{ filter: 'drop-shadow(0 0 25px rgba(249, 115, 22, 0.8))' }} 
+          />
           <h1 className="mt-8 text-4xl font-black text-orange-500 tracking-widest uppercase">Heksejakt</h1>
         </div>
       )}
@@ -440,7 +445,9 @@ export default function App() {
             >
               <Flame size={20} /> HEKSEJAKT
             </h1>
-            <div className="text-[10px] font-bold text-zinc-500 tracking-widest uppercase">2026</div>
+            <div className="text-[10px] font-bold text-zinc-500 tracking-widest uppercase">
+              #nød 2026
+            </div>
           </div>
         </header>
 
@@ -657,17 +664,43 @@ export default function App() {
                     <p className="flex justify-between border-b border-red-900/30 pb-1"><span>Politi:</span> <strong className="text-red-400">110</strong></p>
                     <p className="flex justify-between pt-1"><span>Ambulanse / Brann:</span> <strong className="text-red-400">112</strong></p>
                   </div>
+                  
                   <div>
-                    <h3 className="font-bold text-zinc-100 mb-1 mt-3">Taxi</h3>
-                    <p className="leading-relaxed">Last ned appene <strong className="text-white">FreeNow</strong> eller <strong className="text-white">Uber</strong> for å bestille taxi i Hamburg raskest mulig.</p>
+                    <h3 className="font-bold text-zinc-100 mb-1 mt-3">Transport</h3>
+                    <p className="leading-relaxed mb-2">
+                      <strong className="text-white">Kollektivt (Hamburg):</strong> Last ned appen <strong className="text-white">HVV</strong> (Hamburger Verkehrsverbund). Veldig enkel for å kjøpe billetter til U-bahn, S-bahn og busser. Alternativt kan du betale med Apple Pay / kort direkte på de fleste stasjoner.
+                    </p>
+                    <p className="leading-relaxed">
+                      <strong className="text-white">Taxi:</strong> Last ned appene <strong className="text-white">FreeNow</strong> eller <strong className="text-white">Uber</strong> for å bestille taxi raskest mulig.
+                    </p>
                   </div>
-                  <div className="bg-zinc-950/50 p-3 rounded-xl border border-red-900/20">
+
+                  <div className="bg-zinc-950/50 p-3 rounded-xl border border-red-900/20 relative">
                     <h3 className="font-bold text-zinc-100 mb-1 flex items-center gap-1"><MapPin size={14} className="text-orange-500"/> Hotel Hamburg</h3>
-                    <p className="text-xs text-zinc-400 leading-relaxed">Scandic Hamburg Emporio<br/>Dammtorwall 19, 20355 Hamburg</p>
+                    <p className="text-xs text-zinc-400 leading-relaxed mb-3">Scandic Hamburg Emporio<br/>Dammtorwall 19, 20355 Hamburg</p>
+                    <button 
+                      onClick={(e) => { 
+                        e.stopPropagation(); 
+                        window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent('Scandic Hamburg Emporio, Dammtorwall 19, 20355 Hamburg, Tyskland')}`); 
+                      }}
+                      className="absolute bottom-3 right-3 flex items-center gap-1 text-[10px] text-blue-400 font-bold bg-blue-500/10 px-2 py-1 rounded-md border border-blue-500/20 hover:bg-blue-500/20 transition-colors"
+                    >
+                      <Navigation size={10} /> Ta meg dit
+                    </button>
                   </div>
-                  <div className="bg-zinc-950/50 p-3 rounded-xl border border-red-900/20">
+
+                  <div className="bg-zinc-950/50 p-3 rounded-xl border border-red-900/20 relative">
                     <h3 className="font-bold text-zinc-100 mb-1 flex items-center gap-1"><MapPin size={14} className="text-orange-500"/> Hotel Goslar</h3>
-                    <p className="text-xs text-zinc-400 leading-relaxed">Hotel der Achtermann<br/>Rosentorstraße 20, 38640 Goslar</p>
+                    <p className="text-xs text-zinc-400 leading-relaxed mb-3">Hotel der Achtermann<br/>Rosentorstraße 20, 38640 Goslar</p>
+                    <button 
+                      onClick={(e) => { 
+                        e.stopPropagation(); 
+                        window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent('Hotel der Achtermann, Rosentorstraße 20, 38640 Goslar, Tyskland')}`); 
+                      }}
+                      className="absolute bottom-3 right-3 flex items-center gap-1 text-[10px] text-blue-400 font-bold bg-blue-500/10 px-2 py-1 rounded-md border border-blue-500/20 hover:bg-blue-500/20 transition-colors"
+                    >
+                      <Navigation size={10} /> Ta meg dit
+                    </button>
                   </div>
                 </div>
               </section>
