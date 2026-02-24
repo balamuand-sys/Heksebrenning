@@ -6,7 +6,8 @@ import {
   RefreshCw, Thermometer, Sun, Cloud, CloudRain, 
   Snowflake, CloudLightning, Coins, AlertTriangle, ShieldCheck,
   Landmark, ScrollText, Plane, Utensils, Search,
-  Share, X, Download, Navigation, ShieldAlert, MessageCircle
+  Share, X, Download, Navigation, ShieldAlert, MessageCircle,
+  Plus, Minus
 } from 'lucide-react';
 
 /**
@@ -297,6 +298,9 @@ export default function App() {
   const [eurRate, setEurRate] = useState(null);
   const chatEndRef = useRef(null);
 
+  // Nye states for Wegbier-teller
+  const [wegbierCount, setWegbierCount] = useState(0);
+
   // Påskeegg state
   const [logoTaps, setLogoTaps] = useState(0);
   const [showEasterEgg, setShowEasterEgg] = useState(false);
@@ -305,6 +309,18 @@ export default function App() {
     const timer = setTimeout(() => setShowSplash(false), 2000);
     return () => clearTimeout(timer);
   }, []);
+
+  // Laste inn lokal lagret data for wegbier
+  useEffect(() => {
+    const savedBeers = localStorage.getItem('heksejakt_wegbiers');
+    if (savedBeers) setWegbierCount(parseInt(savedBeers));
+  }, []);
+
+  const handleWegbierChange = (increment) => {
+    const newCount = Math.max(0, wegbierCount + increment);
+    setWegbierCount(newCount);
+    localStorage.setItem('heksejakt_wegbiers', newCount.toString());
+  };
 
   useEffect(() => {
     const fetchWeather = async () => {
@@ -558,6 +574,19 @@ export default function App() {
                 </div>
               </section>
 
+              {/* WEGBIER-TELLER */}
+              <section className="bg-zinc-900 p-6 rounded-2xl border border-zinc-800 shadow-xl flex items-center justify-between">
+                <div>
+                  <h2 className="font-bold flex items-center gap-2 text-zinc-100"><Beer size={20} className="text-orange-500"/> Wegbier-teller</h2>
+                  <p className="text-xs text-zinc-500 mt-1">Din personlige logg for turen</p>
+                </div>
+                <div className="flex items-center gap-3 bg-zinc-950 p-1.5 rounded-full border border-zinc-800">
+                  <button onClick={() => handleWegbierChange(-1)} className="p-2 bg-zinc-800 hover:bg-zinc-700 rounded-full transition-colors"><Minus size={16} className="text-zinc-300"/></button>
+                  <span className="w-8 text-center font-black text-xl text-orange-400">{wegbierCount}</span>
+                  <button onClick={() => handleWegbierChange(1)} className="p-2 bg-orange-600 hover:bg-orange-500 rounded-full transition-colors"><Plus size={16} className="text-white"/></button>
+                </div>
+              </section>
+
               <section className="bg-zinc-900 p-6 rounded-2xl border border-zinc-800 shadow-xl">
                 <h2 className="font-bold mb-4 flex items-center gap-2 text-zinc-100"><Headphones className="text-orange-500" /> Podcast</h2>
                 <iframe style={{ borderRadius: '12px' }} src="https://open.spotify.com/embed/episode/6HTGxq4it3BRx9a69VAN89?utm_source=generator" width="100%" height="152" frameBorder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
@@ -609,7 +638,7 @@ export default function App() {
               </section>
 
               {/* NØDKONTAKTER & ADRESSER - FLYTTET NEDERST */}
-              <section className="bg-red-950/30 p-6 rounded-2xl border border-red-900/50 shadow-xl">
+              <section className="bg-red-950/30 p-6 rounded-2xl border border-red-900/50 shadow-xl mb-4">
                 <h2 className="font-bold mb-4 flex items-center gap-2 text-red-400"><ShieldAlert size={20} /> Sikkerhet & Adresser</h2>
                 <div className="space-y-4 text-sm text-zinc-300">
                   <div>
