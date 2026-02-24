@@ -5,7 +5,7 @@ import {
   CheckCircle2, Headphones, PlayCircle, Sparkles, Send, 
   Bot, RefreshCw, Thermometer, Sun, Cloud, CloudRain, 
   Snowflake, CloudLightning, Coins, AlertTriangle, ShieldCheck,
-  History, Landmark, ScrollText, Plane, Utensils, Eye, Search,
+  History, Landmark, ScrollText, Plane, Utensils, Search,
   Share, X, Download
 } from 'lucide-react';
 
@@ -25,54 +25,70 @@ const getEnvApiKey = () => {
 
 const apiKey = getEnvApiKey();
 
-const callGeminiAPI = async (prompt, systemInstruction = null, retries = 3) => {
+const callGeminiAPI = async (prompt, systemInstruction = null) => {
   if (!apiKey || apiKey.trim() === "") return "FEIL: API-nøkkel mangler i Vercel-innstillingene.";
   
-  const delay = (ms) => new Promise((res) => setTimeout(res, ms));
-  let attempt = 0;
+  // Liste over modeller heksa skal prøve, i prioritert rekkefølge
+  const modelsToTry = [
+    'gemini-1.5-flash', 
+    'gemini-1.5-flash-latest', 
+    'gemini-1.5-pro',
+    'gemini-pro'
+  ];
+  
+  let lastErrorStatus = "";
 
-  while (attempt < retries) {
+  for (const model of modelsToTry) {
     try {
+      const payload = {
+        contents: [{ parts: [{ text: prompt }] }],
+        safetySettings: [
+          { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+          { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" }
+        ]
+      };
+
+      // Eldre modeller (som gemini-pro) støtter ikke systemInstruction direkte på samme måte,
+      // så vi baker inn instruksjonen i selve teksten for sikkerhets skyld hvis det er den modellen.
+      if (systemInstruction && model.includes("1.5")) {
+        payload.systemInstruction = { parts: [{ text: systemInstruction }] };
+      } else if (systemInstruction && !model.includes("1.5")) {
+        payload.contents[0].parts[0].text = `Instruks til deg: ${systemInstruction}\n\nSpørsmål fra bruker: ${prompt}`;
+      }
+
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey.trim()}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey.trim()}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            systemInstruction: systemInstruction ? { parts: [{ text: systemInstruction }] } : undefined,
-            safetySettings: [
-              { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
-              { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" }
-            ]
-          })
+          body: JSON.stringify(payload)
         }
       );
 
-      // Sjekk for spesifikke HTTP-feil fra Google
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        console.error("API Error Data:", errorData);
+      if (response.ok) {
+        const data = await response.json();
+        return data.candidates?.[0]?.content?.parts?.[0]?.text || "Heksa mumler noe uforståelig...";
+      } else {
+        // Hvis modellen ikke finnes (404), la løkken fortsette til neste modell
+        if (response.status === 404) {
+          lastErrorStatus = "404 (Ikke funnet)";
+          continue; 
+        }
         
-        if (response.status === 400) return "FEIL 400: Ugyldig forespørsel. API-nøkkelen kan inneholde skrivefeil.";
-        if (response.status === 403) return "FEIL 403: Ugyldig API-nøkkel. Har du husket å Redeploye appen på Vercel etter at du la inn nøkkelen?";
-        if (response.status === 404) return "FEIL 404: Finner ikke AI-modellen.";
-        if (response.status === 429) return "FEIL 429: For mange spørsmål på kort tid. Vent litt!";
+        // Andre feil (f.eks ugyldig nøkkel) bør avbryte og si ifra med en gang
+        if (response.status === 400) return "FEIL 400: Ugyldig forespørsel. Sjekk at API-nøkkelen er kopiert riktig inn i Vercel.";
+        if (response.status === 403) return "FEIL 403: API-nøkkelen er ugyldig eller mangler tilgang. Har du husket å Redeploye på Vercel?";
+        if (response.status === 429) return "FEIL 429: For mange spørsmål på kort tid. Heksa må puste ut litt.";
         
-        throw new Error(`Google API svarte med feilkode: ${response.status}`);
+        lastErrorStatus = response.status.toString();
+        continue;
       }
-
-      const data = await response.json();
-      return data.candidates?.[0]?.content?.parts?.[0]?.text || "Heksa mumler noe uforståelig...";
     } catch (error) {
-      attempt++;
-      if (attempt >= retries) {
-        // Viser den spesifikke feilmeldingen fremfor "Sjekk internett"
-        return `Nettverksfeil: ${error.message}. Hvis du er på et bedriftsnettverk eller har en streng adblocker, kan tjenesten være blokkert.`;
-      }
-      await delay(2000);
+      lastErrorStatus = error.message;
     }
   }
+
+  return `Orakelet forsøkte alle trylleformler, men feilet. Siste feilmelding: ${lastErrorStatus}. (Tips: Prøv å lage en helt ny API-nøkkel i Google AI Studio hvis problemet vedvarer).`;
 };
 
 // --- KOMPLETT DATA FRA AGENDA-PDF ---
