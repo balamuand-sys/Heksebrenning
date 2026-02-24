@@ -6,7 +6,7 @@ import {
   RefreshCw, Thermometer, Sun, Cloud, CloudRain, 
   Snowflake, CloudLightning, Coins, AlertTriangle, ShieldCheck,
   Landmark, ScrollText, Plane, Utensils, Search,
-  Share, X, Download
+  Share, X, Download, Navigation, ShieldAlert, MessageCircle
 } from 'lucide-react';
 
 /**
@@ -45,7 +45,8 @@ const callGeminiAPI = async (prompt, systemInstruction = null) => {
         : prompt;
 
       const payload = {
-        contents: [{ parts: [{ text: fullText }] }]
+        contents: [{ parts: [{ text: fullText }] }],
+        tools: [{ "google_search": {} }] // Gir heksa tilgang til Google Søk!
       };
 
       const response = await fetch(
@@ -98,10 +99,10 @@ const agendaData = [
   {
     date: "Fredag 01.05.26",
     items: [
-      { id: 5, time: "10:30", title: "Frühschoppen", location: "Cafe am Markt", budget: "€ 30", icon: <Beer size={20} />, details: "...tyskerne har selvsagt både et ord, og kultur for, å drikke til frokost. Selv om fokuset er på drikke, serveres ofte en andre frokost, gjerne med Weißwurst, søt sennep og pretzel. Tog til Hamburg går 13:03." },
+      { id: 5, time: "10:30", title: "Frühschoppen", location: "Cafe am Markt, Goslar", budget: "€ 30", icon: <Beer size={20} />, details: "...tyskerne har selvsagt både et ord, og kultur for, å drikke til frokost. Selv om fokuset er på drikke, serveres ofte en andre frokost, gjerne med Weißwurst, søt sennep og pretzel. Tog til Hamburg går 13:03." },
       { id: 6, time: "13:03", title: "Avreise til Hamburg", location: "Goslar Stasjon", budget: null, icon: <Train size={20} />, details: "Tog til Hamburg med bytte i Hannover 14:10-14:36. Tilbake til sivilisasjonen i Tysklands nest største by." },
       { id: 7, time: "~17:15", title: "Innsjekking", location: "Scandic Hamburg Emporio", budget: null, icon: <MapPin size={20} />, details: "Innsjekking på hotellet vårt i Hamburg, beliggende ved Gänsemarkt." },
-      { id: 8, time: "18:00", title: "Middag", location: "Oberhafen Kantine", budget: "€ 60", icon: <Utensils size={20} />, details: "Meget tradisjonsrik restaurant hvor arbeiderne i havnen gjerne spiste. Bygget er skjevt og det serveres Labskaus." },
+      { id: 8, time: "18:00", title: "Middag", location: "Oberhafen Kantine, Hamburg", budget: "€ 60", icon: <Utensils size={20} />, details: "Meget tradisjonsrik restaurant hvor arbeiderne i havnen gjerne spiste. Bygget er skjevt og det serveres Labskaus." },
       { id: 9, time: "21:00", title: "Utflukt", location: "Hemmelig", budget: null, icon: <Search size={20} />, details: "Etter middag beveger vi oss en kort gåtur og starter kveldens hemmelige aktivitet." }
     ]
   },
@@ -110,8 +111,8 @@ const agendaData = [
     items: [
       { id: 10, time: "10:30", title: "Frokost", location: "Berta Boozy Brunch Club", budget: "€ 50", icon: <Beer size={20} />, details: "Bord er booket hos Berta. Budsjettet på € 50 tar høyde for lunsj og Bottomless Mimosa med vb jenter <3." },
       { id: 11, time: "12:30", title: "Utforsking i Hamburg", location: "Schanzenviertel -> St. Pauli", budget: "€ 25 (bargeld)", icon: <Map size={20} />, details: "Sjekk Sightseeing-fanen for detaljert rute. Vi ender på hotellet, tar en pust i bakken, og fortsetter kvelden." },
-      { id: 12, time: "19:15", title: "Vordrink", location: "Pallas", budget: "€ 30", icon: <Beer size={20} />, details: "Vordrink før vi drar videre til middag." },
-      { id: 13, time: "20:30", title: "Middag", location: "Bullerei", budget: "€ 85", icon: <Utensils size={20} />, details: "Bord er booket på Bullerei – en restaurant i gourmet-klassen. De spesialiserer seg på kjøtt." }
+      { id: 12, time: "19:15", title: "Vordrink", location: "Pallas Hamburg", budget: "€ 30", icon: <Beer size={20} />, details: "Vordrink før vi drar videre til middag." },
+      { id: 13, time: "20:30", title: "Middag", location: "Bullerei, Hamburg", budget: "€ 85", icon: <Utensils size={20} />, details: "Bord er booket på Bullerei – en restaurant i gourmet-klassen. De spesialiserer seg på kjøtt." }
     ]
   },
   {
@@ -160,6 +161,16 @@ const qaData = [
   { q: "Hva er den dyreste gaten i Hamburg?", a: "Neuer Wall - her finner du luksusmerkene." }
 ];
 
+const parlorData = [
+  { no: "En stor øl, takk!", de: "Ein großes Bier, bitte!" },
+  { no: "Hvor er toalettet?", de: "Wo ist die Toilette?" },
+  { no: "Regningen, takk", de: "Die Rechnung, bitte" },
+  { no: "Snakker du engelsk?", de: "Sprechen Sie Englisch?" },
+  { no: "Skål!", de: "Prost!" },
+  { no: "Unnskyld (for å få oppmerksomhet)", de: "Entschuldigung" },
+  { no: "Takk", de: "Danke" }
+];
+
 const nightclubs = ["Uebel & Gefährlich", "Mojo Club", "Südpol", "Angie's", "NOHO"];
 
 // --- HJELPEFUNKSJONER ---
@@ -190,11 +201,9 @@ const InstallPrompt = () => {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
-    // Sjekker om appen allerede kjører som en "installert" app (standalone)
     const isInStandaloneMode = () => ('standalone' in window.navigator) && (window.navigator.standalone);
     const isAndroidStandalone = window.matchMedia('(display-mode: standalone)').matches;
 
-    // Viser pop-upen etter 3 sekunder hvis den ikke er installert
     if (!isInStandaloneMode() && !isAndroidStandalone) {
       const timer = setTimeout(() => setShow(true), 3000);
       return () => clearTimeout(timer);
@@ -242,11 +251,25 @@ const AgendaCard = ({ item }) => {
               <span>•</span>
               <MapPin size={14} /> <span>{item.location}</span>
             </div>
-            {item.budget && (
-              <div className="flex items-center gap-1.5 text-xs text-orange-400 mt-2 font-bold bg-orange-500/5 px-2 py-1 rounded-md w-fit border border-orange-500/10">
-                <Wallet size={12} /> {item.budget}
-              </div>
-            )}
+            <div className="flex flex-wrap gap-2 mt-3">
+              {item.budget && (
+                <div className="flex items-center gap-1.5 text-xs text-orange-400 font-bold bg-orange-500/5 px-2 py-1 rounded-md border border-orange-500/10">
+                  <Wallet size={12} /> {item.budget}
+                </div>
+              )}
+              {/* TA MEG DIT KNAPP */}
+              {item.location !== "Hemmelig" && (
+                <button 
+                  onClick={(e) => { 
+                    e.stopPropagation(); 
+                    window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.location + ', Tyskland')}`); 
+                  }}
+                  className="flex items-center gap-1 text-xs text-blue-400 font-bold bg-blue-500/10 px-2 py-1 rounded-md border border-blue-500/20 hover:bg-blue-500/20 transition-colors"
+                >
+                  <Navigation size={12} /> Ta meg dit
+                </button>
+              )}
+            </div>
           </div>
         </div>
         <div className="text-zinc-600 mt-1">{expanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}</div>
@@ -273,6 +296,10 @@ export default function App() {
   const [weather, setWeather] = useState({ hamburg: null, goslar: null, loading: true });
   const [eurRate, setEurRate] = useState(null);
   const chatEndRef = useRef(null);
+
+  // Påskeegg state
+  const [logoTaps, setLogoTaps] = useState(0);
+  const [showEasterEgg, setShowEasterEgg] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setShowSplash(false), 2000);
@@ -314,15 +341,17 @@ export default function App() {
     setIsChatting(true);
 
     try {
-      // ORAKEL-EKSPERT: Her mater vi AI'en med all informasjonen fra appen!
       const heksKunnskap = `
         Agenda: ${JSON.stringify(agendaData.map(d => `${d.date}: ${d.items.map(i => `${i.time} ${i.title} på ${i.location} (${i.details})`).join(" | ")}`))}
         Sightseeing i Hamburg: ${JSON.stringify(sightseeingData.map(s => `${s.title}: ${s.desc}`))}
         Trivia og Spørsmål: ${JSON.stringify(qaData)}
+        Nødkontakter: Politi 110, Ambulanse 112. Taxi: Bruk FreeNow eller Uber. 
+        Hotell Hamburg: Scandic Hamburg Emporio, Dammtorwall 19. Hotell Goslar: Hotel der Achtermann, Rosentorstraße 20.
       `;
 
       const sys = `Du er en sarkastisk tysk heks fra Brocken-fjellet som heter Rakel. Svar på norsk, men sleng inn et tysk ord her og der. Vær kort, litt bitende og underholdende. 
-      Du er et orakel som vet ABSOLUTT ALT om denne turen. Her er all informasjonen du har om turen: ${heksKunnskap}. Bruk denne informasjonen til å gi nøyaktige svar på brukernes spørsmål om agendaen, trivia eller sightseeing.`;
+      Du vet alt om den interne turen (se info under), men DU HAR OGSÅ MAGISK TILGANG TIL HELE INTERNETT via Google Søk. Hvis brukeren spør om noe som ikke står i reiseinfoen, bruk søkemotoren din til å finne ferske fakta!
+      Intern reiseinformasjon: ${heksKunnskap}`;
       
       const res = await callGeminiAPI(msg, sys);
       setChatHistory(prev => [...prev, { role: 'model', text: res }]);
@@ -331,10 +360,42 @@ export default function App() {
     }
   };
 
+  const handleLogoClick = () => {
+    const newCount = logoTaps + 1;
+    setLogoTaps(newCount);
+    if (newCount >= 5) {
+      setShowEasterEgg(true);
+      setLogoTaps(0);
+      setTimeout(() => setShowEasterEgg(false), 5000);
+    }
+  };
+
   return (
     <>
       <InstallPrompt />
       
+      {/* PÅSKEEGG ANIMASJON */}
+      {showEasterEgg && (
+        <>
+          <style>{`
+            @keyframes fall {
+              0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+              100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+            }
+          `}</style>
+          {Array.from({ length: 40 }).map((_, i) => (
+            <div key={i} className="fixed z-[200] pointer-events-none text-4xl"
+                 style={{
+                     left: Math.random() * 100 + 'vw',
+                     top: '-10vh',
+                     animation: `fall ${Math.random() * 2 + 2}s linear ${Math.random() * 1}s forwards`
+                 }}>
+                {Math.random() > 0.5 ? '🍺' : '🔥'}
+            </div>
+          ))}
+        </>
+      )}
+
       {showSplash && (
         <div className="fixed inset-0 z-[100] bg-zinc-950 flex flex-col items-center justify-center animate-out fade-out duration-1000 fill-mode-forwards">
           <Flame size={80} className="text-orange-500 animate-bounce" />
@@ -345,7 +406,11 @@ export default function App() {
       <div className="min-h-screen bg-zinc-950 text-zinc-200 font-sans pb-24">
         <header className="bg-zinc-900 border-b border-zinc-800 sticky top-0 z-40 p-4 shadow-xl">
           <div className="max-w-md mx-auto flex justify-between items-center">
-            <h1 className="text-xl font-black text-orange-500 flex items-center gap-2">
+            {/* Logo med skjult Påskeegg-trigger */}
+            <h1 
+              onClick={handleLogoClick}
+              className="text-xl font-black text-orange-500 flex items-center gap-2 cursor-pointer select-none"
+            >
               <Flame size={20} /> HEKSEJAKT
             </h1>
             <div className="text-[10px] font-bold text-zinc-500 tracking-widest uppercase">2026</div>
@@ -392,6 +457,17 @@ export default function App() {
                       <div>
                         <h3 className="font-bold text-zinc-100">{stop.title}</h3>
                         <p className="text-sm text-zinc-400 mt-1">{stop.desc}</p>
+                        
+                        {/* TA MEG DIT KNAPP FOR SIGHTSEEING */}
+                        <button 
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            window.open(`https://www.google.com/maps/dir/?api=1&destination=${stop.lat},${stop.lon}`); 
+                          }}
+                          className="mt-3 text-xs flex items-center gap-1 text-blue-400 font-bold bg-blue-500/10 px-2 py-1.5 rounded-md hover:bg-blue-500/20 transition-colors w-fit border border-blue-500/20"
+                        >
+                          <Navigation size={12}/> Ta meg dit
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -401,7 +477,6 @@ export default function App() {
           )}
 
           {activeTab === 'orakel' && (
-            // Justert høyden her til calc(100dvh - 190px) for å sitte nede ved bunnmenyen!
             <div className="animate-in fade-in flex flex-col h-[calc(100dvh-190px)]">
               <div className="flex-1 overflow-y-auto space-y-4 p-2 custom-scrollbar">
                 {chatHistory.map((m, i) => (
@@ -420,7 +495,7 @@ export default function App() {
                   value={chatInput} 
                   onChange={e => setChatInput(e.target.value)}
                   placeholder="Spør Rakel..." 
-                  enterKeyHint="send" /* Dette gir Send-knapp på mobiltastaturet! */
+                  enterKeyHint="send"
                   className="flex-1 bg-zinc-900 border border-zinc-800 rounded-full px-5 py-3 text-sm focus:border-orange-500 outline-none"
                 />
                 <button type="submit" disabled={isChatting} className="bg-orange-600 p-3 rounded-full shadow-lg active:scale-95 transition-transform"><Send size={20} /></button>
@@ -437,11 +512,25 @@ export default function App() {
                   <p className="text-sm text-zinc-400 leading-relaxed">{d.a}</p>
                 </div>
               ))}
+
+              {/* MINI-PARLØR */}
+              <h2 className="text-xl font-bold mb-4 mt-8 flex items-center gap-2 text-zinc-100">
+                <MessageCircle size={20} className="text-orange-500"/> Mini-Parlør
+              </h2>
+              <div className="grid grid-cols-1 gap-2">
+                {parlorData.map((d, i) => (
+                  <div key={i} className="bg-zinc-900 p-3 rounded-xl border border-zinc-800 flex flex-col shadow-sm">
+                    <span className="text-xs text-zinc-500 mb-1">{d.no}</span>
+                    <span className="font-bold text-orange-400">{d.de}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
           {activeTab === 'info' && (
             <div className="animate-in fade-in space-y-6">
+              
               {/* UTVIDBAR INTRO FRA PDF */}
               <section 
                 className={`bg-zinc-900 rounded-2xl border transition-all duration-500 overflow-hidden shadow-xl ${introExpanded ? 'border-orange-500/50' : 'border-zinc-800'}`}
@@ -518,6 +607,31 @@ export default function App() {
                 <h2 className="font-bold mb-4 flex items-center gap-2 text-zinc-100"><PlayCircle className="text-orange-500" /> Spilleliste</h2>
                 <iframe style={{ borderRadius: '12px' }} src="https://open.spotify.com/embed/playlist/1me7HbLOFEA2JG764uTqFg?utm_source=generator" width="100%" height="352" frameBorder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
               </section>
+
+              {/* NØDKONTAKTER & ADRESSER - FLYTTET NEDERST */}
+              <section className="bg-red-950/30 p-6 rounded-2xl border border-red-900/50 shadow-xl">
+                <h2 className="font-bold mb-4 flex items-center gap-2 text-red-400"><ShieldAlert size={20} /> Sikkerhet & Adresser</h2>
+                <div className="space-y-4 text-sm text-zinc-300">
+                  <div>
+                    <h3 className="font-bold text-zinc-100 mb-1">Nødnummer</h3>
+                    <p className="flex justify-between border-b border-red-900/30 pb-1"><span>Politi:</span> <strong className="text-red-400">110</strong></p>
+                    <p className="flex justify-between pt-1"><span>Ambulanse / Brann:</span> <strong className="text-red-400">112</strong></p>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-zinc-100 mb-1 mt-3">Taxi</h3>
+                    <p className="leading-relaxed">Last ned appene <strong className="text-white">FreeNow</strong> eller <strong className="text-white">Uber</strong> for å bestille taxi i Hamburg raskest mulig.</p>
+                  </div>
+                  <div className="bg-zinc-950/50 p-3 rounded-xl border border-red-900/20">
+                    <h3 className="font-bold text-zinc-100 mb-1 flex items-center gap-1"><MapPin size={14} className="text-orange-500"/> Hotel Hamburg</h3>
+                    <p className="text-xs text-zinc-400 leading-relaxed">Scandic Hamburg Emporio<br/>Dammtorwall 19, 20355 Hamburg</p>
+                  </div>
+                  <div className="bg-zinc-950/50 p-3 rounded-xl border border-red-900/20">
+                    <h3 className="font-bold text-zinc-100 mb-1 flex items-center gap-1"><MapPin size={14} className="text-orange-500"/> Hotel Goslar</h3>
+                    <p className="text-xs text-zinc-400 leading-relaxed">Hotel der Achtermann<br/>Rosentorstraße 20, 38640 Goslar</p>
+                  </div>
+                </div>
+              </section>
+
             </div>
           )}
         </main>
