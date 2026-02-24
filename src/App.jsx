@@ -26,7 +26,7 @@ const getEnvApiKey = () => {
 
 const apiKey = getEnvApiKey();
 
-const callGeminiAPI = async (prompt, systemInstruction = null) => {
+const callGeminiAPI = async (history, prompt, systemInstruction = null) => {
   if (!apiKey || apiKey.trim() === "") return "FEIL: API-nøkkel mangler i Vercel-innstillingene.";
   
   // Prioriterer de nyeste og raskeste modellene først
@@ -38,17 +38,26 @@ const callGeminiAPI = async (prompt, systemInstruction = null) => {
   
   let errorMessages = [];
 
+  // Konverterer chat-historikk (hopper over den hardkodede velkomstmeldingen)
+  const formattedHistory = history.slice(1).map(msg => ({
+    role: msg.role,
+    parts: [{ text: msg.text }]
+  }));
+  // Legger til det nye spørsmålet
+  formattedHistory.push({ role: "user", parts: [{ text: prompt }] });
+
   for (const model of modelsToTry) {
     try {
-      // Vi baker inn personligheten rett i meldingen for å unngå kompatibilitetsfeil (404/400)
-      const fullText = systemInstruction 
-        ? `[BAKGRUNNSINFO: ${systemInstruction}]\n\nSPØRSMÅL FRA BRUKER: ${prompt}`
-        : prompt;
-
       const payload = {
-        contents: [{ parts: [{ text: fullText }] }],
-        tools: [{ "google_search": {} }] // Gir heksa tilgang til Google Søk!
+        contents: formattedHistory,
+        // Riktig aktivering av Google Søk for REST API:
+        tools: [{ googleSearch: {} }] 
       };
+
+      // Settes opp riktig for nyere Gemini-modeller
+      if (systemInstruction) {
+        payload.systemInstruction = { parts: [{ text: systemInstruction }] };
+      }
 
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey.trim()}`,
@@ -365,11 +374,13 @@ export default function App() {
         Hotell Hamburg: Scandic Hamburg Emporio, Dammtorwall 19. Hotell Goslar: Hotel der Achtermann, Rosentorstraße 20.
       `;
 
-      const sys = `Du er en sarkastisk tysk heks fra Brocken-fjellet som heter Rakel. Svar på norsk, men sleng inn et tysk ord her og der. Vær kort, litt bitende og underholdende. 
-      Du vet alt om den interne turen (se info under), men DU HAR OGSÅ MAGISK TILGANG TIL HELE INTERNETT via Google Søk. Hvis brukeren spør om noe som ikke står i reiseinfoen, bruk søkemotoren din til å finne ferske fakta!
-      Intern reiseinformasjon: ${heksKunnskap}`;
+      const sys = `Du er en sarkastisk tysk heks fra Brocken-fjellet som heter Rakel. Svar på norsk, men sleng inn et tysk ord her og der. Vær morsom og litt bitende, men DU MÅ ALLTID GI ET FAKTISK SVAR på det brukeren spør om i den samme meldingen! 
+      ALDRI si "jeg skal sjekke" uten å faktisk gi svaret. Bruk Google Søk til å finne ekte, oppdatert informasjon (for eksempel værmeldingen for Goslar) og gi svaret umiddelbart sammen med de sarkastiske kommentarene dine.
       
-      const res = await callGeminiAPI(msg, sys);
+      Intern reiseinformasjon for Heksejakten 2026: ${heksKunnskap}`;
+      
+      // Nå sender vi også med historikken inn i funksjonen!
+      const res = await callGeminiAPI(chatHistory, msg, sys);
       setChatHistory(prev => [...prev, { role: 'model', text: res }]);
     } finally {
       setIsChatting(false);
