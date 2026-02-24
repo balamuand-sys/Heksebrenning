@@ -28,22 +28,22 @@ const apiKey = getEnvApiKey();
 const callGeminiAPI = async (prompt, systemInstruction = null) => {
   if (!apiKey || apiKey.trim() === "") return "FEIL: API-nøkkel mangler i Vercel-innstillingene.";
   
-  // Standard, stabile modeller for gratis-tier
+  // Prioriterer de nyeste og raskeste modellene først
   const modelsToTry = [
-    'gemini-1.5-flash', 
-    'gemini-1.5-flash-8b',
-    'gemini-2.0-flash'
+    'gemini-2.5-flash',
+    'gemini-2.0-flash',
+    'gemini-1.5-flash'
   ];
   
   let errorMessages = [];
 
   for (const model of modelsToTry) {
     try {
+      // Vi baker inn personligheten rett i meldingen for å unngå kompatibilitetsfeil (404/400)
       const fullText = systemInstruction 
         ? `[BAKGRUNNSINFO: ${systemInstruction}]\n\nSPØRSMÅL FRA BRUKER: ${prompt}`
         : prompt;
 
-      // FJERNET safetySettings med BLOCK_NONE, da dette ofte blokkeres eller gir 404 på gratis-nøkler.
       const payload = {
         contents: [{ parts: [{ text: fullText }] }]
       };
@@ -64,9 +64,9 @@ const callGeminiAPI = async (prompt, systemInstruction = null) => {
         const errData = await response.json().catch(() => ({}));
         const googleError = errData?.error?.message || response.statusText;
         
-        // Sjekker spesifikt for "Limit: 0" problemet du opplevde
+        // Sjekker spesifikt for "Limit: 0" problemet
         if (googleError.includes("limit: 0")) {
-          return "FEIL: Google gir deg 0 i kvote. Dette betyr at kontoen din ikke har tilgang til gratis-tier. Tips: Prøv å lage en ny API-nøkkel med en privat @gmail.com-konto i stedet for en jobb/skole-konto!";
+          return "FEIL: Google gir deg fremdeles 0 i kvote. Sjekk at kortet/faktureringen er knyttet til riktig prosjekt i Google Cloud, og at API-nøkkelen er oppdatert!";
         }
 
         if (response.status === 400 && googleError.includes("API key not valid")) {
@@ -143,7 +143,7 @@ const qaData = [
   { q: "Hvorfor er det så mange katter i Harz-souvenirbutikkene?", a: "Katten ble tradisjonelt sett på som heksens følgesvenn, spesielt den sorte katten." },
   { q: "Hva er det 'skjulte' symbolet på Goslars rikdom?", a: "Dukatenmännchen – en liten figur på et hus i gamlebyen som bæsjer gullmynter, et symbol på byens tidligere gruverikdom." },
   { q: "Hvilket kjent palass ligger i Goslar?", a: "Kaiserpfalz Goslar – et enormt romansk palass fra 1000-tallet." },
-  { q: "Hva er spesielt med skiferen på husene i Goslar?", a: "Mange hus er dekket av blå-grå skifer fra de lokale gruvene i fiskeskjell-mønstre." },
+  { q: "Hva er spesielt med skiferen på husene i Goslar?", a: "Mange hus er dekket av blå-grå skifer fra de local gruvene i fiskeskjell-mønstre." },
   { q: "Hva er klokkespillet på torget (Marktplatz)?", a: "Hver dag kl. 09, 12, 15 og 18 viser figurer gruvehistorien til Rammelsberg." },
   { q: "Hva er den mørke siden av Goslars historie?", a: "Under 1500- og 1600-tallet var byen åsted for omfattende hekseprosesser." },
   { q: "Hva smaker egentlig Gose-øl?", a: "Den er syrlig, salt og forfriskende – minner nesten om en belgisk Geuze eller en surøl." },
