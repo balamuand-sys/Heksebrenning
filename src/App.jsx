@@ -26,7 +26,7 @@ const getEnvApiKey = () => {
 const apiKey = getEnvApiKey();
 
 const callGeminiAPI = async (prompt, systemInstruction = null, retries = 3) => {
-  if (!apiKey) return "FEIL: API-nøkkel mangler i Vercel-innstillingene.";
+  if (!apiKey || apiKey.trim() === "") return "FEIL: API-nøkkel mangler i Vercel-innstillingene.";
   
   const delay = (ms) => new Promise((res) => setTimeout(res, ms));
   let attempt = 0;
@@ -34,7 +34,7 @@ const callGeminiAPI = async (prompt, systemInstruction = null, retries = 3) => {
   while (attempt < retries) {
     try {
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey.trim()}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -49,12 +49,27 @@ const callGeminiAPI = async (prompt, systemInstruction = null, retries = 3) => {
         }
       );
 
-      if (!response.ok) throw new Error(`API Error: ${response.status}`);
+      // Sjekk for spesifikke HTTP-feil fra Google
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("API Error Data:", errorData);
+        
+        if (response.status === 400) return "FEIL 400: Ugyldig forespørsel. API-nøkkelen kan inneholde skrivefeil.";
+        if (response.status === 403) return "FEIL 403: Ugyldig API-nøkkel. Har du husket å Redeploye appen på Vercel etter at du la inn nøkkelen?";
+        if (response.status === 404) return "FEIL 404: Finner ikke AI-modellen.";
+        if (response.status === 429) return "FEIL 429: For mange spørsmål på kort tid. Vent litt!";
+        
+        throw new Error(`Google API svarte med feilkode: ${response.status}`);
+      }
+
       const data = await response.json();
       return data.candidates?.[0]?.content?.parts?.[0]?.text || "Heksa mumler noe uforståelig...";
     } catch (error) {
       attempt++;
-      if (attempt >= retries) return "Klarte ikke få kontakt med orakelet. Sjekk internett!";
+      if (attempt >= retries) {
+        // Viser den spesifikke feilmeldingen fremfor "Sjekk internett"
+        return `Nettverksfeil: ${error.message}. Hvis du er på et bedriftsnettverk eller har en streng adblocker, kan tjenesten være blokkert.`;
+      }
       await delay(2000);
     }
   }
