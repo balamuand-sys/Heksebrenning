@@ -7,7 +7,7 @@ import {
   Snowflake, CloudLightning, Coins, AlertTriangle, ShieldCheck,
   Landmark, ScrollText, Plane, Utensils, Search,
   Share, X, Download, Navigation, ShieldAlert, MessageCircle,
-  Plus, Minus
+  Plus, Minus, Camera
 } from 'lucide-react';
 
 /**
@@ -195,6 +195,12 @@ const getWeatherDetails = (code) => {
   return { text: "Skiftende", icon: <Cloud size={28} className="text-zinc-400" /> };
 };
 
+const formatDay = (dateString) => {
+  const date = new Date(dateString);
+  const days = ['Søn', 'Man', 'Tir', 'Ons', 'Tor', 'Fre', 'Lør'];
+  return days[date.getDay()];
+};
+
 // --- KOMPONENTER ---
 
 // Custom Heksehatt-ikon
@@ -303,7 +309,11 @@ export default function App() {
     { role: 'model', text: 'Kakk-kakk! Rakel er klar. Spør meg om Walpurgis, Hamburg eller øl!' }
   ]);
   const [isChatting, setIsChatting] = useState(false);
+  
+  // Vær-states
   const [weather, setWeather] = useState({ hamburg: null, goslar: null, loading: true });
+  const [expandedWeather, setExpandedWeather] = useState(null); // 'hamburg' eller 'goslar'
+
   const [eurRate, setEurRate] = useState(null);
   const chatEndRef = useRef(null);
 
@@ -335,12 +345,13 @@ export default function App() {
     const fetchWeather = async () => {
       try {
         const [h, g] = await Promise.all([
-          fetch('https://api.open-meteo.com/v1/forecast?latitude=53.55&longitude=9.99&current=temperature_2m,weather_code'),
-          fetch('https://api.open-meteo.com/v1/forecast?latitude=51.90&longitude=10.42&current=temperature_2m,weather_code')
+          // Henter daglig varsel for 3 dager
+          fetch('https://api.open-meteo.com/v1/forecast?latitude=53.55&longitude=9.99&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Europe%2FBerlin&forecast_days=3'),
+          fetch('https://api.open-meteo.com/v1/forecast?latitude=51.90&longitude=10.42&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Europe%2FBerlin&forecast_days=3')
         ]);
         const hd = await h.json();
         const gd = await g.json();
-        setWeather({ hamburg: hd.current, goslar: gd.current, loading: false });
+        setWeather({ hamburg: hd.daily, goslar: gd.daily, loading: false });
       } catch (e) { setWeather(prev => ({ ...prev, loading: false })); }
     };
     fetchWeather();
@@ -467,7 +478,7 @@ export default function App() {
 
           {activeTab === 'rute' && (
             <div className="animate-in fade-in slide-in-from-bottom-4">
-              <h2 className="text-xl font-bold mb-4">Lørdagsruta</h2>
+              <h2 className="text-xl font-bold mb-4">Lørdagsrute</h2>
               <div className="mb-6 rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-900 h-64 relative shadow-2xl">
                 <iframe 
                   width="100%" height="100%" 
@@ -564,6 +575,25 @@ export default function App() {
 
           {activeTab === 'info' && (
             <div className="animate-in fade-in space-y-6">
+
+              {/* POV CAMERA CTA */}
+              <section className="bg-gradient-to-br from-orange-600/20 to-zinc-900 p-6 rounded-2xl border border-orange-500/30 shadow-xl">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="bg-orange-500 p-2 rounded-full text-white">
+                    <Camera size={20} />
+                  </div>
+                  <h2 className="font-bold text-zinc-100">Felles Bildegalleri</h2>
+                </div>
+                <p className="text-sm text-zinc-400 mb-4 leading-relaxed">
+                  Bruk POV-kameraet for å ta bilder og dele minner fra turen! Alle bildene havner direkte i vårt felles album.
+                </p>
+                <button
+                  onClick={() => window.open('https://pov.camera/qr/18A901E7-C3FF-4B1C-87A9-B80D9B68385B', '_blank')}
+                  className="w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-lg flex justify-center items-center gap-2"
+                >
+                  <Camera size={18} /> Åpne POV Kamera
+                </button>
+              </section>
               
               {/* UTVIDBAR INTRO FRA PDF */}
               <section 
@@ -610,24 +640,98 @@ export default function App() {
                 <iframe style={{ borderRadius: '12px' }} src="https://open.spotify.com/embed/episode/6HTGxq4it3BRx9a69VAN89?utm_source=generator" width="100%" height="152" frameBorder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
               </section>
 
+              {/* UTVIDET 3-DAGERS VÆRVARSEL */}
               <section className="bg-zinc-900 p-6 rounded-2xl border border-zinc-800 shadow-xl">
-                <h2 className="font-bold mb-4 flex items-center gap-2 text-zinc-100"><Thermometer className="text-orange-500" /> Været nå</h2>
+                <h2 className="font-bold mb-4 flex items-center gap-2 text-zinc-100"><Thermometer className="text-orange-500" /> Værvarsel</h2>
                 {weather.loading ? (
                   <div className="flex justify-center p-4"><RefreshCw className="animate-spin text-zinc-500" size={24} /></div>
                 ) : (
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-zinc-950 p-4 rounded-xl text-center border border-zinc-800 flex flex-col items-center">
-                      <div className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest mb-2">Hamburg</div>
-                      {getWeatherDetails(weather.hamburg?.weather_code).icon}
-                      <div className="text-2xl font-black mt-2">{Math.round(weather.hamburg?.temperature_2m || 0)}°</div>
-                      <div className="text-[10px] text-zinc-400 mt-1 uppercase">{getWeatherDetails(weather.hamburg?.weather_code).text}</div>
+                  <div className="grid grid-cols-1 gap-4">
+                    
+                    {/* HAMBURG KORT */}
+                    <div 
+                      onClick={() => setExpandedWeather(expandedWeather === 'hamburg' ? null : 'hamburg')}
+                      className={`bg-zinc-950 p-4 rounded-xl border cursor-pointer transition-all duration-300 ${expandedWeather === 'hamburg' ? 'border-orange-500 shadow-lg' : 'border-zinc-800 hover:border-zinc-700'}`}
+                    >
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <div className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest mb-1">Hamburg</div>
+                          <div className="text-sm font-bold text-zinc-100">
+                            {expandedWeather === 'hamburg' ? '3-dagers varsel' : 'Været i dag'}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                           {getWeatherDetails(weather.hamburg?.weather_code[0]).icon}
+                           <div className="text-xl font-black">{Math.round(weather.hamburg?.temperature_2m_max[0] || 0)}°</div>
+                           {expandedWeather === 'hamburg' ? <ChevronUp size={16} className="text-zinc-600"/> : <ChevronDown size={16} className="text-zinc-600"/>}
+                        </div>
+                      </div>
+
+                      {/* Utvidet visning Hamburg */}
+                      {expandedWeather === 'hamburg' && weather.hamburg && (
+                        <div className="mt-4 pt-4 border-t border-zinc-800 grid grid-cols-3 gap-2 animate-in fade-in duration-300">
+                          {[0, 1, 2].map(dayIdx => (
+                            <div key={dayIdx} className="flex flex-col items-center text-center">
+                              <span className="text-[10px] text-zinc-500 uppercase font-bold mb-1">
+                                {dayIdx === 0 ? 'I dag' : formatDay(weather.hamburg.time[dayIdx])}
+                              </span>
+                              {getWeatherDetails(weather.hamburg.weather_code[dayIdx]).icon}
+                              <div className="mt-1 flex items-center gap-1 text-xs">
+                                <span className="font-bold text-zinc-200">{Math.round(weather.hamburg.temperature_2m_max[dayIdx])}°</span>
+                                <span className="text-zinc-600">/</span>
+                                <span className="text-zinc-500">{Math.round(weather.hamburg.temperature_2m_min[dayIdx])}°</span>
+                              </div>
+                              <span className="text-[9px] text-zinc-400 mt-1 uppercase leading-tight">
+                                {getWeatherDetails(weather.hamburg.weather_code[dayIdx]).text}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    <div className="bg-zinc-950 p-4 rounded-xl text-center border border-zinc-800 flex flex-col items-center">
-                      <div className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest mb-2">Goslar</div>
-                      {getWeatherDetails(weather.goslar?.weather_code).icon}
-                      <div className="text-2xl font-black mt-2">{Math.round(weather.goslar?.temperature_2m || 0)}°</div>
-                      <div className="text-[10px] text-zinc-400 mt-1 uppercase">{getWeatherDetails(weather.goslar?.weather_code).text}</div>
+
+                    {/* GOSLAR KORT */}
+                    <div 
+                      onClick={() => setExpandedWeather(expandedWeather === 'goslar' ? null : 'goslar')}
+                      className={`bg-zinc-950 p-4 rounded-xl border cursor-pointer transition-all duration-300 ${expandedWeather === 'goslar' ? 'border-orange-500 shadow-lg' : 'border-zinc-800 hover:border-zinc-700'}`}
+                    >
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <div className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest mb-1">Goslar</div>
+                          <div className="text-sm font-bold text-zinc-100">
+                            {expandedWeather === 'goslar' ? '3-dagers varsel' : 'Været i dag'}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                           {getWeatherDetails(weather.goslar?.weather_code[0]).icon}
+                           <div className="text-xl font-black">{Math.round(weather.goslar?.temperature_2m_max[0] || 0)}°</div>
+                           {expandedWeather === 'goslar' ? <ChevronUp size={16} className="text-zinc-600"/> : <ChevronDown size={16} className="text-zinc-600"/>}
+                        </div>
+                      </div>
+
+                      {/* Utvidet visning Goslar */}
+                      {expandedWeather === 'goslar' && weather.goslar && (
+                        <div className="mt-4 pt-4 border-t border-zinc-800 grid grid-cols-3 gap-2 animate-in fade-in duration-300">
+                          {[0, 1, 2].map(dayIdx => (
+                            <div key={dayIdx} className="flex flex-col items-center text-center">
+                              <span className="text-[10px] text-zinc-500 uppercase font-bold mb-1">
+                                {dayIdx === 0 ? 'I dag' : formatDay(weather.goslar.time[dayIdx])}
+                              </span>
+                              {getWeatherDetails(weather.goslar.weather_code[dayIdx]).icon}
+                              <div className="mt-1 flex items-center gap-1 text-xs">
+                                <span className="font-bold text-zinc-200">{Math.round(weather.goslar.temperature_2m_max[dayIdx])}°</span>
+                                <span className="text-zinc-600">/</span>
+                                <span className="text-zinc-500">{Math.round(weather.goslar.temperature_2m_min[dayIdx])}°</span>
+                              </div>
+                              <span className="text-[9px] text-zinc-400 mt-1 uppercase leading-tight">
+                                {getWeatherDetails(weather.goslar.weather_code[dayIdx]).text}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
+
                   </div>
                 )}
               </section>
@@ -713,7 +817,7 @@ export default function App() {
           <div className="max-w-md mx-auto flex justify-between">
             {[
               { id: 'program', icon: <Calendar size={22} />, label: 'Program' },
-              { id: 'rute', icon: <Map size={22} />, label: 'Rute' },
+              { id: 'rute', icon: <Map size={22} />, label: 'Lørdagsrute' },
               { id: 'orakel', icon: <WitchHatIcon size={22} />, label: 'Rakel' },
               { id: 'qa', icon: <HelpCircle size={22} />, label: 'Q&A' },
               { id: 'info', icon: <Info size={22} />, label: 'Info' }
@@ -731,3 +835,5 @@ export default function App() {
     </>
   );
 }
+
+
