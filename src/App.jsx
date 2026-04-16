@@ -438,7 +438,7 @@ export default function App() {
         <div
           className="fixed inset-0 z-[100] flex flex-col items-center justify-center animate-out fade-out duration-1000 fill-mode-forwards"
           style={{
-            backgroundImage: 'url(/brocken.jpg)',
+            backgroundImage: 'url(/brocken.png)',
             backgroundSize: 'cover',
             backgroundPosition: 'center 55%',
           }}
