@@ -435,14 +435,24 @@ export default function App() {
       )}
 
       {showSplash && (
-        <div className="fixed inset-0 z-[100] bg-zinc-950 flex flex-col items-center justify-center animate-out fade-out duration-1000 fill-mode-forwards">
-          {/* GLØDENDE FLAMME I INTROEN */}
-          <Flame 
-            size={80} 
-            className="text-orange-500 animate-bounce" 
-            style={{ filter: 'drop-shadow(0 0 25px rgba(249, 115, 22, 0.8))' }} 
-          />
-          <h1 className="mt-8 text-4xl font-black text-orange-500 tracking-widest uppercase">Heksejakt</h1>
+        <div
+          className="fixed inset-0 z-[100] flex flex-col items-center justify-center animate-out fade-out duration-1000 fill-mode-forwards"
+          style={{
+            backgroundImage: 'url(/brocken.jpg)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center 55%',
+          }}
+        >
+          <div className="absolute inset-0 bg-black/40" />
+          <div className="relative z-10 flex flex-col items-center">
+            {/* GLØDENDE FLAMME I INTROEN */}
+            <Flame
+              size={80}
+              className="text-orange-500 animate-bounce"
+              style={{ filter: 'drop-shadow(0 0 25px rgba(249, 115, 22, 0.8))' }}
+            />
+            <h1 className="mt-8 text-4xl font-black text-orange-500 tracking-widest uppercase">Heksejakt</h1>
+          </div>
         </div>
       )}
 
