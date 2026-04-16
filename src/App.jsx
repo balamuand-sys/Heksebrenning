@@ -442,7 +442,7 @@ export default function App() {
               backgroundImage: 'url(/brocken.png)',
               backgroundSize: 'cover',
               backgroundPosition: 'center 55%',
-              transform: 'scale(1.2)',
+              transform: 'scale(1.1)',
             }}
           />
           <div className="absolute inset-0 bg-black/40" />
@@ -451,9 +451,12 @@ export default function App() {
             <Flame
               size={80}
               className="text-orange-500 animate-bounce"
-              style={{ filter: 'drop-shadow(0 0 25px rgba(249, 115, 22, 0.8))' }}
+              style={{ filter: 'drop-shadow(0 0 30px rgba(249, 115, 22, 0.9)) drop-shadow(0 0 60px rgba(249, 115, 22, 0.5))' }}
             />
-            <h1 className="mt-8 text-4xl font-black text-orange-500 tracking-widest uppercase">Heksejakt</h1>
+            <h1
+              className="mt-8 text-4xl font-black text-orange-500 tracking-widest uppercase"
+              style={{ textShadow: '0 0 20px rgba(249, 115, 22, 0.9), 0 0 50px rgba(249, 115, 22, 0.5)' }}
+            >Heksejakt</h1>
           </div>
         </div>
       )}
