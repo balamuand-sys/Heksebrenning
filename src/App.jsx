@@ -435,14 +435,16 @@ export default function App() {
       )}
 
       {showSplash && (
-        <div
-          className="fixed inset-0 z-[100] flex flex-col items-center justify-center animate-out fade-out duration-1000 fill-mode-forwards"
-          style={{
-            backgroundImage: 'url(/brocken.png)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center 55%',
-          }}
-        >
+        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center animate-out fade-out duration-1000 fill-mode-forwards overflow-hidden">
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: 'url(/brocken.png)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center 55%',
+              transform: 'scale(1.6)',
+            }}
+          />
           <div className="absolute inset-0 bg-black/40" />
           <div className="relative z-10 flex flex-col items-center">
             {/* GLØDENDE FLAMME I INTROEN */}
