@@ -441,7 +441,7 @@ export default function App() {
             style={{
               backgroundImage: 'url(/brocken.png)',
               backgroundSize: 'cover',
-              backgroundPosition: 'center 55%',
+              backgroundPosition: '65% 55%',
               transform: 'scale(1.1)',
             }}
           />
