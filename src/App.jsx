@@ -7,7 +7,7 @@ import {
   Snowflake, CloudLightning, Coins, AlertTriangle, ShieldCheck,
   Landmark, ScrollText, Plane, Utensils, Search,
   Share, X, Download, Navigation, ShieldAlert, MessageCircle,
-  Plus, Minus, Camera
+  Plus, Minus
 } from 'lucide-react';
 
 /**
@@ -576,25 +576,6 @@ export default function App() {
           {activeTab === 'info' && (
             <div className="animate-in fade-in space-y-6">
 
-              {/* POV CAMERA CTA */}
-              <section className="bg-gradient-to-br from-orange-600/20 to-zinc-900 p-6 rounded-2xl border border-orange-500/30 shadow-xl">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="bg-orange-500 p-2 rounded-full text-white">
-                    <Camera size={20} />
-                  </div>
-                  <h2 className="font-bold text-zinc-100">Felles Bildegalleri</h2>
-                </div>
-                <p className="text-sm text-zinc-400 mb-4 leading-relaxed">
-                  Bruk POV-kameraet for å ta bilder og dele minner fra turen! Alle bildene havner direkte i vårt felles album.
-                </p>
-                <button
-                  onClick={() => window.open('https://pov.camera/qr/18A901E7-C3FF-4B1C-87A9-B80D9B68385B', '_blank')}
-                  className="w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-lg flex justify-center items-center gap-2"
-                >
-                  <Camera size={18} /> Åpne POV Kamera
-                </button>
-              </section>
-              
               {/* UTVIDBAR INTRO FRA PDF */}
               <section 
                 className={`bg-zinc-900 rounded-2xl border transition-all duration-500 overflow-hidden shadow-xl ${introExpanded ? 'border-orange-500/50' : 'border-zinc-800'}`}
