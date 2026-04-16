@@ -442,7 +442,7 @@ export default function App() {
               backgroundImage: 'url(/brocken.png)',
               backgroundSize: 'cover',
               backgroundPosition: 'center 55%',
-              transform: 'scale(1.6)',
+              transform: 'scale(1.2)',
             }}
           />
           <div className="absolute inset-0 bg-black/40" />
