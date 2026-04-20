@@ -49,7 +49,7 @@ export const OrakelTab = ({ chatHistory, setChatHistory, chatInput, setChatInput
   };
 
   return (
-    <div className="animate-in fade-in flex flex-col h-[calc(100dvh-190px)]">
+    <div className="animate-in fade-in flex flex-col" style={{ height: 'calc(100dvh - 190px - env(safe-area-inset-bottom))' }}>
       <div className="flex justify-end mb-2">
         <button
           onClick={handleClearChat}
@@ -70,11 +70,12 @@ export const OrakelTab = ({ chatHistory, setChatHistory, chatInput, setChatInput
         {isChatting && <div className="text-orange-500 text-xs animate-pulse italic">Rakel brygger på et svar...</div>}
         <div ref={chatEndRef} />
       </div>
-      <form onSubmit={handleChatSubmit} className="mt-4 flex gap-2">
+      <form onSubmit={handleChatSubmit} className="mt-4 flex gap-2 pb-2">
         <input
           type="text"
           value={chatInput}
           onChange={e => setChatInput(e.target.value)}
+          onFocus={() => setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 300)}
           placeholder="Spør Rakel..."
           enterKeyHint="send"
           className="flex-1 bg-zinc-900 border border-zinc-800 rounded-full px-5 py-3 text-sm focus:border-orange-500 outline-none"
