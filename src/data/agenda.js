@@ -11,8 +11,8 @@ export const agendaData = [
   {
     date: "Fredag 01.05.26",
     items: [
-      { id: 5, time: "10:30", title: "Frühschoppen", location: "Cafe am Markt, Goslar", budget: "€ 30", icon: "Beer", details: "...tyskerne har selvsagt både et ord, og kultur for, å drikke til frokost. Selv om fokuset er på drikke, serveres ofte en andre frokost, gjerne med Weißwurst, søt sennep og pretzel. Tog mot Hamburg går 12:36, med bytte i Kreiensen 13:11-13:31 og Hannover 14:23-14:36." },
-      { id: 6, time: "13:03", title: "Avreise til Hamburg", location: "Goslar Stasjon", budget: null, icon: "Train", details: "Tog til Hamburg med bytte i Hannover 14:10-14:36. Tilbake til sivilisasjonen i Tysklands nest største by." },
+      { id: 5, time: "10:00", title: "Frühschoppen", location: "Cafe am Markt, Goslar", budget: "€ 30", icon: "Beer", details: "...tyskerne har selvsagt både et ord, og kultur for, å drikke til frokost. Selv om fokuset er på drikke, serveres ofte en andre frokost, gjerne med Weißwurst, søt sennep og pretzel. " },
+      { id: 6, time: "12:36", title: "Avreise til Hamburg", location: "Goslar Stasjon", budget: null, icon: "Train", details: "Tog mot Hamburg går 12:36, med bytte i Kreiensen 13:11-13:31 og Hannover 14:23-14:36." },
       { id: 7, time: "~17:15", title: "Innsjekking", location: "Scandic Hamburg Emporio", budget: null, icon: "MapPin", details: "Innsjekking på hotellet vårt i Hamburg, beliggende ved Gänsemarkt." },
       { id: 8, time: "18:00", title: "Middag", location: "Oberhafen Kantine, Hamburg", budget: "€ 60", icon: "Utensils", details: "Meget tradisjonsrik restaurant hvor arbeiderne i havnen gjerne spiste. Bygget er skjevt og det serveres Labskaus." },
       { id: 9, time: "21:00", title: "Utflukt", location: "Hemmelig", budget: null, icon: "Search", details: "Etter middag beveger vi oss en kort gåtur og starter kveldens hemmelige aktivitet." }
