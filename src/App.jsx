@@ -152,7 +152,7 @@ export default function App() {
 
       {showSplash && <SplashScreen />}
 
-      <div className="min-h-screen bg-zinc-950 text-zinc-200 font-sans pb-24">
+      <div className="min-h-screen bg-zinc-950 text-zinc-200 font-sans pb-[calc(6rem+env(safe-area-inset-bottom))]">
         <header className="bg-zinc-900 border-b border-zinc-800 sticky top-0 z-40 p-4 shadow-xl">
           <div className="max-w-md mx-auto flex justify-between items-center">
             <h1
@@ -205,7 +205,7 @@ export default function App() {
           )}
         </main>
 
-        <nav className="fixed bottom-0 left-0 right-0 bg-zinc-950/95 backdrop-blur-lg border-t border-zinc-800 py-4 px-2 z-50">
+        <nav className="fixed bottom-0 left-0 right-0 bg-zinc-950/95 backdrop-blur-lg border-t border-zinc-800 pt-4 px-2 z-50 pb-[calc(1rem+env(safe-area-inset-bottom))]">
           <div className="max-w-md mx-auto flex justify-between">
             {[
               { id: 'program', icon: <Calendar size={22} />, label: 'Program' },
