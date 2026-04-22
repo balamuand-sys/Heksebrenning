@@ -13,7 +13,7 @@ import { InfoTab } from './components/InfoTab.jsx';
 const INITIAL_CHAT = [{ role: 'model', text: 'Kakk-kakk! Rakel er klar. Spør meg om Walpurgis, Hamburg eller øl!' }];
 const CHAT_STORAGE_KEY = 'rakel_chat';
 const WEGBIER_STORAGE_KEY = 'heksejakt_wegbiers';
-const COMPLETED_STORAGE_KEY = 'heksejakt_completed';
+const STOPS_STORAGE_KEY = 'heksejakt_stops';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('program');
@@ -44,10 +44,10 @@ export default function App() {
     return saved ? parseInt(saved, 10) : 0;
   });
 
-  // Gjennomførte agendapunkter
-  const [completedItems, setCompletedItems] = useState(() => {
+  // Avkryssede sightseeing-stopp
+  const [completedStops, setCompletedStops] = useState(() => {
     try {
-      const saved = localStorage.getItem(COMPLETED_STORAGE_KEY);
+      const saved = localStorage.getItem(STOPS_STORAGE_KEY);
       return saved ? new Set(JSON.parse(saved)) : new Set();
     } catch {
       return new Set();
@@ -75,9 +75,9 @@ export default function App() {
 
   useEffect(() => {
     try {
-      localStorage.setItem(COMPLETED_STORAGE_KEY, JSON.stringify([...completedItems]));
+      localStorage.setItem(STOPS_STORAGE_KEY, JSON.stringify([...completedStops]));
     } catch { /* full storage */ }
-  }, [completedItems]);
+  }, [completedStops]);
 
   useEffect(() => {
     const fetchWeather = async () => {
@@ -107,10 +107,10 @@ export default function App() {
     setWegbierCount(prev => Math.max(0, prev + increment));
   };
 
-  const handleToggleComplete = (itemId) => {
-    setCompletedItems(prev => {
+  const handleToggleStop = (stopId) => {
+    setCompletedStops(prev => {
       const next = new Set(prev);
-      next.has(itemId) ? next.delete(itemId) : next.add(itemId);
+      next.has(stopId) ? next.delete(stopId) : next.add(stopId);
       return next;
     });
   };
@@ -169,15 +169,14 @@ export default function App() {
 
         <main className="max-w-md mx-auto p-4">
           {activeTab === 'program' && (
-            <ProgramTab
-              completedItems={completedItems}
-              onToggleComplete={handleToggleComplete}
-            />
+            <ProgramTab />
           )}
           {activeTab === 'rute' && (
             <RouteTab
               selectedMapStop={selectedMapStop}
               setSelectedMapStop={setSelectedMapStop}
+              completedStops={completedStops}
+              onToggleStop={handleToggleStop}
             />
           )}
           {activeTab === 'orakel' && (
