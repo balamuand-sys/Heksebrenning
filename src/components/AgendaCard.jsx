@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
-import { Clock, MapPin, Wallet, ChevronDown, ChevronUp, Navigation, CheckCircle2, Circle,
+import { Clock, MapPin, Wallet, ChevronDown, ChevronUp, Navigation,
   Beer, Train, Flame, Map, Plane, Utensils, Search } from 'lucide-react';
 
 const ICON_MAP = { Beer, Train, Flame, MapPin, Utensils, Search, Map, Plane };
 
-export const AgendaCard = ({ item, completed, onToggleComplete }) => {
+export const AgendaCard = ({ item }) => {
   const [expanded, setExpanded] = useState(false);
   const IconComponent = ICON_MAP[item.icon] || Beer;
 
   return (
     <div
       className={`bg-zinc-900 border rounded-2xl p-5 mb-4 transition-all duration-300 shadow-lg ${
-        completed ? 'border-green-700/40 opacity-70' : expanded ? 'border-orange-500/50' : 'border-zinc-800 hover:border-zinc-700'
+        expanded ? 'border-orange-500/50' : 'border-zinc-800 hover:border-zinc-700'
       }`}
     >
       <div className="flex justify-between items-start">
@@ -19,11 +19,11 @@ export const AgendaCard = ({ item, completed, onToggleComplete }) => {
           className="flex gap-4 flex-1 cursor-pointer"
           onClick={() => setExpanded(!expanded)}
         >
-          <div className={`mt-1 flex items-center justify-center w-10 h-10 ${completed ? 'text-green-500' : 'text-orange-500'}`}>
+          <div className="mt-1 flex items-center justify-center w-10 h-10 text-orange-500">
             <IconComponent size={20} />
           </div>
           <div className="flex-1">
-            <h3 className={`text-lg font-bold ${completed ? 'line-through text-zinc-500' : 'text-zinc-100'}`}>
+            <h3 className="text-lg font-bold text-zinc-100">
               {item.title}
             </h3>
             <div className="flex items-center gap-2 text-xs text-zinc-500 mt-2 font-medium">
@@ -52,13 +52,6 @@ export const AgendaCard = ({ item, completed, onToggleComplete }) => {
           </div>
         </div>
         <div className="flex flex-col items-end gap-2 ml-2">
-          <button
-            onClick={() => onToggleComplete(item.id)}
-            className="text-zinc-600 hover:text-green-500 transition-colors"
-            title={completed ? "Merk som ikke gjennomført" : "Merk som gjennomført"}
-          >
-            {completed ? <CheckCircle2 size={20} className="text-green-500" /> : <Circle size={20} />}
-          </button>
           <div className="text-zinc-600" onClick={() => setExpanded(!expanded)}>
             {expanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
           </div>

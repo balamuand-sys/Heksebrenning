@@ -3,7 +3,7 @@ import { Calendar } from 'lucide-react';
 import { agendaData } from '../data/agenda.js';
 import { AgendaCard } from './AgendaCard.jsx';
 
-export const ProgramTab = ({ completedItems, onToggleComplete }) => (
+export const ProgramTab = () => (
   <div className="animate-in fade-in slide-in-from-bottom-4">
     {agendaData.map((day, idx) => (
       <div key={idx} className="mb-8">
@@ -14,8 +14,6 @@ export const ProgramTab = ({ completedItems, onToggleComplete }) => (
           <AgendaCard
             key={item.id}
             item={item}
-            completed={completedItems.has(item.id)}
-            onToggleComplete={onToggleComplete}
           />
         ))}
       </div>
