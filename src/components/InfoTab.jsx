@@ -157,7 +157,7 @@ export const InfoTab = ({
           <h3 className="font-bold text-zinc-100 mb-1 flex items-center gap-1"><MapPin size={14} className="text-orange-500" /> Hotel Hamburg</h3>
           <p className="text-xs text-zinc-400 leading-relaxed mb-3">Scandic Hamburg Emporio<br />Dammtorwall 19, 20355 Hamburg</p>
           <button
-            onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent('Scandic Hamburg Emporio, Dammtorwall 19, 20355 Hamburg, Tyskland')}`)}
+            onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent('Scandic Hamburg Emporio, Dammtorwall 19, 20355 Hamburg, Tyskland')}`, '_blank', 'noopener,noreferrer')}
             className="absolute bottom-3 right-3 flex items-center gap-1 text-[10px] text-blue-400 font-bold bg-blue-500/10 px-2 py-1 rounded-md border border-blue-500/20 hover:bg-blue-500/20 transition-colors"
           >
             <Navigation size={10} /> Ta meg dit
@@ -167,7 +167,7 @@ export const InfoTab = ({
           <h3 className="font-bold text-zinc-100 mb-1 flex items-center gap-1"><MapPin size={14} className="text-orange-500" /> Hotel Goslar</h3>
           <p className="text-xs text-zinc-400 leading-relaxed mb-3">Hotel der Achtermann<br />Rosentorstraße 20, 38640 Goslar</p>
           <button
-            onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent('Hotel der Achtermann, Rosentorstraße 20, 38640 Goslar, Tyskland')}`)}
+            onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent('Hotel der Achtermann, Rosentorstraße 20, 38640 Goslar, Tyskland')}`, '_blank', 'noopener,noreferrer')}
             className="absolute bottom-3 right-3 flex items-center gap-1 text-[10px] text-blue-400 font-bold bg-blue-500/10 px-2 py-1 rounded-md border border-blue-500/20 hover:bg-blue-500/20 transition-colors"
           >
             <Navigation size={10} /> Ta meg dit

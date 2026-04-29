@@ -37,7 +37,7 @@ export const RouteTab = ({ selectedMapStop, setSelectedMapStop, completedStops, 
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    window.open(`https://www.google.com/maps/dir/?api=1&destination=${stop.lat},${stop.lon}`);
+                    window.open(`https://www.google.com/maps/dir/?api=1&destination=${stop.lat},${stop.lon}`, '_blank', 'noopener,noreferrer');
                   }}
                   className="mt-3 text-xs flex items-center gap-1 text-blue-400 font-bold bg-blue-500/10 px-2 py-1.5 rounded-md hover:bg-blue-500/20 transition-colors w-fit border border-blue-500/20"
                 >
