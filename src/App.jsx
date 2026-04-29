@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Calendar, Map, HelpCircle, Info, Flame } from 'lucide-react';
 
 import { InstallPrompt } from './components/InstallPrompt.jsx';
@@ -79,29 +79,41 @@ export default function App() {
     } catch { /* full storage */ }
   }, [completedStops]);
 
-  useEffect(() => {
-    const fetchWeather = async () => {
-      try {
-        const [h, g] = await Promise.all([
-          fetch('https://api.open-meteo.com/v1/forecast?latitude=53.55&longitude=9.99&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Europe%2FBerlin&forecast_days=3'),
-          fetch('https://api.open-meteo.com/v1/forecast?latitude=51.90&longitude=10.42&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Europe%2FBerlin&forecast_days=3')
-        ]);
-        const hd = await h.json();
-        const gd = await g.json();
-        setWeather({ hamburg: hd.daily, goslar: gd.daily, loading: false });
-      } catch {
-        setWeather(prev => ({ ...prev, loading: false }));
-      }
-    };
-    fetchWeather();
+  const fetchWeather = useCallback(async () => {
+    setWeather(prev => ({ ...prev, loading: true }));
+    try {
+      const [h, g] = await Promise.all([
+        fetch('https://api.open-meteo.com/v1/forecast?latitude=53.55&longitude=9.99&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Europe%2FBerlin&forecast_days=3'),
+        fetch('https://api.open-meteo.com/v1/forecast?latitude=51.90&longitude=10.42&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Europe%2FBerlin&forecast_days=3')
+      ]);
+      const hd = await h.json();
+      const gd = await g.json();
+      setWeather({ hamburg: hd.daily, goslar: gd.daily, loading: false });
+    } catch {
+      setWeather(prev => ({ ...prev, loading: false }));
+    }
   }, []);
 
-  useEffect(() => {
+  const fetchEurRate = useCallback(() => {
     fetch('https://api.exchangerate-api.com/v4/latest/EUR')
       .then(res => res.json())
       .then(data => setEurRate(data.rates.NOK))
       .catch(() => setEurRate(null));
   }, []);
+
+  useEffect(() => { fetchWeather(); }, [fetchWeather]);
+  useEffect(() => { fetchEurRate(); }, [fetchEurRate]);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchWeather();
+        fetchEurRate();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [fetchWeather, fetchEurRate]);
 
   const handleWegbierChange = (increment) => {
     setWegbierCount(prev => Math.max(0, prev + increment));

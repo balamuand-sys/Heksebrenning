@@ -41,7 +41,7 @@ export const AgendaCard = ({ item }) => {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.location + ', Tyskland')}`);
+                    window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.location + ', Tyskland')}`, '_blank', 'noopener,noreferrer');
                   }}
                   className="flex items-center gap-1 text-xs text-blue-400 font-bold bg-blue-500/10 px-2 py-1 rounded-md border border-blue-500/20 hover:bg-blue-500/20 transition-colors"
                 >
