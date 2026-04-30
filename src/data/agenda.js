@@ -14,7 +14,6 @@ export const agendaData = [
     items: [
       { id: 5, time: "~11:30", title: "Frühschoppen", location: "Zum Anleger, Hamburg", budget: "€ 30", icon: "Beer", details: "Frühschoppen på Zum Anleger i Hamburg – tyskerne har selvsagt både et ord, og kultur for, å drikke til frokost. Selv om fokuset er på drikke, serveres ofte en andre frokost, gjerne med Weißwurst, søt sennep og pretzel. Vogelhüttendeich 123, Wilhelmsburg. Ca. kl. 11:30–14:30." },
       { id: 17, time: "~14:30", title: "Egentid / Tierpark Hagenbeck", location: "Tierpark Hagenbeck, Hamburg", budget: null, icon: "Map", details: "Fri tid – mulig utflukt til Tierpark Hagenbeck, en av verdens eldste og mest kjente dyrehager. Grunnlagt i 1907 av Carl Hagenbeck, var dette verdens første dyrepark uten bur – dyrene er skilt fra publikum med grøfter i stedet for gitter. Lokstedter Grenzstraße 2, 22527 Hamburg (Stellingen). Inngang ca. € 30." },
-      { id: 7, time: "~17:15", title: "Innsjekking", location: "Scandic Hamburg Emporio", budget: null, icon: "MapPin", details: "Innsjekking på hotellet vårt i Hamburg, beliggende ved Gänsemarkt." },
       { id: 8, time: "18:00", title: "Middag", location: "Oberhafen Kantine, Hamburg", budget: "€ 60", icon: "Utensils", details: "Meget tradisjonsrik restaurant hvor arbeiderne i havnen gjerne spiste. Bygget er skjevt og det serveres Labskaus." },
       { id: 9, time: "21:00", title: "Utflukt", location: "Hemmelig", budget: null, icon: "Search", details: "Etter middag beveger vi oss en kort gåtur og starter kveldens hemmelige aktivitet." }
     ]
