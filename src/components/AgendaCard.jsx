@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Clock, MapPin, Wallet, ChevronDown, ChevronUp, Navigation,
-  Beer, Train, Flame, Map, Plane, Utensils, Search } from 'lucide-react';
+  Beer, Train, Flame, Map, Plane, Utensils, Search, X } from 'lucide-react';
 
 const ICON_MAP = { Beer, Train, Flame, MapPin, Utensils, Search, Map, Plane };
 
@@ -10,8 +10,10 @@ export const AgendaCard = ({ item }) => {
 
   return (
     <div
-      className={`bg-zinc-900 border rounded-2xl p-5 mb-4 transition-all duration-300 shadow-lg ${
-        expanded ? 'border-orange-500/50' : 'border-zinc-800 hover:border-zinc-700'
+      className={`relative bg-zinc-900 border rounded-2xl p-5 mb-4 transition-all duration-300 shadow-lg ${
+        item.missed
+          ? 'border-zinc-700 opacity-60'
+          : expanded ? 'border-orange-500/50' : 'border-zinc-800 hover:border-zinc-700'
       }`}
     >
       <div className="flex justify-between items-start">
@@ -60,6 +62,11 @@ export const AgendaCard = ({ item }) => {
       {expanded && (
         <div className="mt-5 pt-5 border-t border-zinc-800 text-sm text-zinc-400 leading-relaxed animate-in fade-in duration-300">
           {item.details}
+        </div>
+      )}
+      {item.missed && (
+        <div className="absolute inset-0 flex items-center justify-center rounded-2xl pointer-events-none">
+          <X size={96} className="text-red-500/60" strokeWidth={1.5} />
         </div>
       )}
     </div>
